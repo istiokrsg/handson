@@ -17,11 +17,24 @@ _echo() {
 
 _read() {
     echo
-    if [ "${TPUT}" != "" ] && [ "$2" != "" ]; then
-        read -p "${L_PAD}$(tput setaf $2)$1$(tput sgr0)" ANSWER
+    if [ "${3}" == "S" ]; then
+        if [ "${TPUT}" != "" ] && [ "$2" != "" ]; then
+            read -s -p "${L_PAD}$(tput setaf $2)$1$(tput sgr0)" ANSWER
+        else
+            read -s -p "${L_PAD}$1" ANSWER
+        fi
     else
-        read -p "${L_PAD}$1" ANSWER
+        if [ "${TPUT}" != "" ] && [ "$2" != "" ]; then
+            read -p "${L_PAD}$(tput setaf $2)$1$(tput sgr0)" ANSWER
+        else
+            read -p "${L_PAD}$1" ANSWER
+        fi
     fi
+}
+
+_result() {
+    echo
+    _echo "# $@" 4
 }
 
 _success() {
