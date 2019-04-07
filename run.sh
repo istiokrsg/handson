@@ -138,6 +138,7 @@ istio_install() {
 
     CHART=${SHELL_DIR}/custom-values.yaml
 
+    echo "helm upgrade --install ${NAME} ${ISTIO_DIR} --namespace ${NAMESPACE} --values ${CHART}"
     helm upgrade --install ${NAME} ${ISTIO_DIR} --namespace ${NAMESPACE} --values ${CHART}
 
 }
