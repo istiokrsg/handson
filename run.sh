@@ -6,6 +6,10 @@ TEMP_DIR=${SHELL_DIR}/temp
 
 NAME="istio"
 NAMESPACE="istio-system"
+VERSION=1.1.2
+
+# set in istio_init
+ISTIO_DIR=
 
 # util func
 source ${SHELL_DIR}/common.sh
@@ -53,7 +57,12 @@ main_menu() {
     title
 
     echo
+    _echo "0. helm init"
+    echo
     _echo "1. istio install"
+    echo
+    _echo "2. sample bookinfo"
+    _echo "2d. sample bookinfo delete"
     echo
     _echo "9. istio delete"
     echo
@@ -62,8 +71,23 @@ main_menu() {
     question
 
     case ${ANSWER} in
+        0)
+            helm_init
+            _read "Press Enter to continue..." 5
+            main_menu
+            ;;
         1)
             istio_install
+            _read "Press Enter to continue..." 5
+            main_menu
+            ;;
+        2)
+            sample_bookinfo
+            _read "Press Enter to continue..." 5
+            main_menu
+            ;;
+        2d)
+            sample_bookinfo_delete
             _read "Press Enter to continue..." 5
             main_menu
             ;;
@@ -79,6 +103,13 @@ main_menu() {
             main_menu
             ;;
     esac
+
+}
+
+helm_init() {
+    NAMESPACE="kube-system"
+    ACCOUNT="tiller"
+
 
 }
 
@@ -103,7 +134,7 @@ istio_init() {
     mkdir -p ${ISTIO_TMP}
 
     CHART=${SHELL_DIR}/charts/istio/istio.yaml
-    VERSION=1.0.2
+    
 
     if [ "${VERSION}" == "" ] || [ "${VERSION}" == "latest" ]; then
         VERSION=$(curl -s https://api.github.com/repos/istio/istio/releases/latest | jq -r '.tag_name')
@@ -159,4 +190,33 @@ istio_delete() {
     kubectl delete namespace ${NAMESPACE}
 }
 
+sample_bookinfo() {
+    istio_init
+
+    SAMPLE_DIR=${ISTIO_TMP}/${NAME}-${VERSION}
+    # auto injection
+    kubectl label namespace default istio-injection=enabled
+
+    # install pod, service
+    kubectl apply -f ${SAMPLE_DIR}/samples/bookinfo/platform/kube/bookinfo.yaml
+
+    # set network resources (gateway, virtualservices)
+    kubectl apply -f ${SAMPLE_DIR}/samples/bookinfo/networking/bookinfo-gateway.yaml
+
+}
+
+sample_bookinfo_delete() {
+    istio_init
+
+    SAMPLE_DIR=${ISTIO_TMP}/${NAME}-${VERSION}
+
+    # uninstall pod, service
+    kubectl delete -f ${SAMPLE_DIR}/samples/bookinfo/platform/kube/bookinfo.yaml
+
+    # unset network resources (gateway, virtualservices)
+    kubectl delete -f ${SAMPLE_DIR}/samples/bookinfo/networking/bookinfo-gateway.yaml
+
+}
+
+####### main
 run
