@@ -3,17 +3,19 @@ SHELL_DIR=$(dirname $0)
 
 source "../0-common/common.sh"
 
+NAMESPACE="default"
+
 ### namespace labeling
-kubectl label namespace default istio-injection=enabled > /dev/null 2>&1
+kubectl label namespace ${NAMESPACE} istio-injection=enabled > /dev/null 2>&1
 
 
 ### install sample app
-kubectl apply -f ${ISTIO_HOME}/samples/bookinfo/platform/kube/bookinfo.yaml
+kubectl apply -f ${ISTIO_HOME}/samples/bookinfo/platform/kube/bookinfo.yaml -n ${NAMESPACE}
 
 #### check
 # kubectl exec -it $(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}') -c ratings -- curl productpage:9080/productpage | grep -o "<title>.*</title>"
 
-kubectl apply -f ${ISTIO_HOME}/samples/bookinfo/networking/bookinfo-gateway.yaml
+kubectl apply -f ${ISTIO_HOME}/samples/bookinfo/networking/bookinfo-gateway.yaml -n ${NAMESPACE}
 
 ## get URL
 INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
