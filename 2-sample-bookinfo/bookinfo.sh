@@ -32,7 +32,7 @@ echo "GATEWAY_URL=${GATEWAY_URL}"
 
 #### check
 #http://localhost/productpage
-echo "Check bookinfo app"
+echo "Check bookinfo app : http://${GATEWAY_URL}/productpage"
 curl -s http://${GATEWAY_URL}/productpage | grep -o "<title>.*</title>"
 echo ""
 
